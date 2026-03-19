@@ -647,8 +647,8 @@
       </div>
       <div class="form-group">
         <label for="fieldTwitter">Twitter / X</label>
-        <input type="text" id="fieldTwitter" placeholder="@handle" required>
-        <div class="field-error">Обов'язкове поле</div>
+        <input type="text" id="fieldTwitter" placeholder="@handle (необов'язково)">
+        <div class="field-error"></div>
       </div>
     </div>
 
@@ -710,7 +710,7 @@
 
           <div class="ticket-center">
             <div class="ticket-emblem">✦</div>
-            <div class="ticket-brand">Я клоданувся</div>
+            <div class="ticket-brand">Проходка</div>
             <div class="ticket-winner-name" id="winnerName"></div>
             <div class="ticket-divider"></div>
             <div class="ticket-prize">Шанс на пріоритетний вхід у коммюніті</div>
@@ -903,7 +903,7 @@ const fields = {
   email: { el: () => document.getElementById('fieldEmail'), validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
   telegram: { el: () => document.getElementById('fieldTelegram'), validate: v => v.length >= 2 },
   linkedin: { el: () => document.getElementById('fieldLinkedin'), validate: v => v.toLowerCase().includes('linkedin.com') || v.length >= 3 },
-  twitter: { el: () => document.getElementById('fieldTwitter'), validate: v => v.length >= 2 },
+  twitter: { el: () => document.getElementById('fieldTwitter'), validate: () => true },
   instagram: { el: () => document.getElementById('fieldInstagram'), validate: v => v.length >= 2 },
   building: { el: () => document.getElementById('fieldBuilding'), validate: v => v.length >= 10 },
   contribution: { el: () => document.getElementById('fieldContribution'), validate: v => v.length >= 10 },
