@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Хочу в коммюніті</title>
+<meta property="og:title" content="Хочу в коммюніті">
+<meta property="og:description" content="Подай заявку — отримай тікет — шанс на пріоритетний вхід">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --ticket-bg: #faf7f0;
+    --text-dark: #2c2417;
+    --text-light: #a89880;
+    --copper: #b87333;
+    --border: #d4c9b8;
+    --inner-border: #e8dfd2;
+    --error: #c44;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ===================== FORM SECTION ===================== */
+  #formSection {
+    width: 100%;
+    max-width: 560px;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  #formSection.hiding {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+  }
+
+  #formSection.hidden { display: none; }
+
+  .form-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .form-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6rem;
+    font-weight: 900;
+    color: var(--text-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .form-header p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--ticket-bg);
+    color: var(--text-dark);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--copper);
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: var(--border);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+
+  .form-group .field-error {
+    font-size: 0.75rem;
+    color: var(--error);
+    margin-top: 4px;
+    display: none;
+  }
+
+  .form-group.has-error input,
+  .form-group.has-error textarea {
+    border-color: var(--error);
+  }
+
+  .form-group.has-error .field-error {
+    display: block;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+    margin: 28px auto;
+  }
+
+  .network-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: var(--error);
+    font-size: 0.85rem;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none;
+    text-align: center;
+  }
+
+  .network-error.visible { display: block; }
+
+  .submit-btn {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 16px 24px;
+    border: 2px solid var(--text-dark);
+    border-radius: 12px;
+    background: var(--text-dark);
+    color: var(--ticket-bg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    background: #3d3225;
+    border-color: #3d3225;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .submit-btn .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  .submit-btn.loading .spinner { display: block; }
+  .submit-btn.loading .btn-text { display: none; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .form-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: var(--border);
+  }
+
+  /* ===================== TOKEN STATES ===================== */
+  #loadingSection {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  #loadingSection .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--copper);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  #loadingSection p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  #errorSection {
+    display: none;
+    text-align: center;
+    padding: 80px 20px;
+    max-width: 480px;
+  }
+
+  #errorSection.visible { display: block; }
+
+  #errorSection h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+  }
+
+  #errorSection p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  /* ===================== TICKET SECTION ===================== */
+  #ticketSection {
+    display: none;
+    width: 100%;
+    max-width: 760px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #ticketSection.visible {
+    display: flex;
+    animation: sectionFadeIn 0.6s ease-out;
+  }
+
+  @keyframes sectionFadeIn {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .ticket-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .ticket-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+  }
+
+  .ticket-header p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  /* Ticket rendering (from raffle-ticket.html) */
+  #ticket-capture {
+    position: relative;
+    width: 700px;
+    max-width: 100%;
+  }
+
+  .ticket-perspective {
+    perspective: 1000px;
+  }
+
+  .ticket-wrapper {
+    position: relative;
+    width: 700px;
+    max-width: 100%;
+    aspect-ratio: 8 / 5;
+    transform: rotateX(var(--x-rotation, 0deg)) rotateY(var(--y-rotation, 0deg));
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transition: transform 0.1s ease-out;
+  }
+
+  .ticket-wrapper.resetting {
+    transition: transform 0.5s ease-out;
+  }
+
+  .ticket-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.1) 30%,
+      transparent 70%
+    );
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+  }
+
+  .ticket-wrapper:hover::after { opacity: 1; }
+
+  .ticket-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  .ticket-content {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ticket-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 80px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    opacity: 0.7;
+  }
+
+  .ticket-top-bar { padding-top: 20px; }
+  .ticket-bottom-bar { padding-bottom: 20px; }
+
+  .ticket-bar .bar-line {
+    flex: 1;
+    height: 1px;
+    background: var(--inner-border);
+  }
+
+  .ticket-bar span:not(.bar-line) { flex-shrink: 0; }
+
+  .ticket-side {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    white-space: nowrap;
+  }
+
+  .ticket-side-left {
+    left: 28px;
+    top: 50%;
+    transform: rotate(-90deg) translateX(-50%);
+    transform-origin: 0 0;
+  }
+
+  .ticket-side-right {
+    right: 28px;
+    top: 50%;
+    transform: rotate(90deg) translateX(50%);
+    transform-origin: 100% 0;
+  }
+
+  .ticket-side .side-num {
+    color: var(--copper);
+    font-weight: 700;
+  }
+
+  .ticket-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 70px;
+    text-align: center;
+  }
+
+  .ticket-emblem {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: var(--copper);
+    opacity: 0.6;
+  }
+
+  .ticket-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.8rem;
+    font-weight: 900;
+    color: var(--text-dark);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .ticket-winner-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--copper);
+    margin-bottom: 14px;
+  }
+
+  .ticket-winner-name:empty { display: none; }
+
+  .ticket-divider {
+    width: 60px;
+    height: 1px;
+    background: var(--border);
+    margin: 0 auto 14px;
+  }
+
+  .ticket-prize {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--copper);
+    letter-spacing: 0.02em;
+    max-width: 340px;
+    line-height: 1.5;
+  }
+
+  /* Action buttons */
+  .ticket-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--ticket-bg);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn:hover {
+    border-color: var(--copper);
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+
+  .btn-primary {
+    background: var(--text-dark);
+    color: var(--ticket-bg);
+    border-color: var(--text-dark);
+  }
+
+  .btn-primary:hover {
+    background: #3d3225;
+    border-color: #3d3225;
+    color: #fff;
+  }
+
+  .btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  .share-platforms {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .share-platforms svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--text-light);
+    transition: fill 0.15s;
+  }
+
+  .share-platforms svg:hover {
+    fill: var(--copper);
+  }
+
+  .share-tooltip {
+    font-size: 0.75rem;
+    color: var(--copper);
+    text-align: center;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .share-tooltip.visible { opacity: 1; }
+
+  .copy-link-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 12px;
+  }
+
+  .copy-link-btn:hover {
+    border-color: var(--copper);
+    color: var(--copper);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .ticket-wrapper {
+      transition: none !important;
+      transform: none !important;
+    }
+    .ticket-wrapper::after { display: none; }
+    .ticket-wrapper.resetting { transition: none !important; }
+    #ticketSection.visible { animation: none; }
+    #formSection.hiding { transition: none; }
+  }
+
+  /* Responsive */
+  @media (max-width: 740px) {
+    body { padding: 24px 12px 40px; }
+    .form-header h1 { font-size: 2rem; }
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+    #ticket-capture, .ticket-wrapper { width: 100%; }
+    .ticket-brand { font-size: 2.6rem; }
+    .ticket-winner-name { font-size: 1.1rem; }
+    .ticket-bar { font-size: 0.5rem; padding-left: 50px; padding-right: 50px; }
+    .ticket-side { font-size: 0.45rem; }
+    .ticket-side-left { left: 16px; }
+    .ticket-side-right { right: 16px; }
+    .ticket-center { padding: 10px 44px; }
+    .ticket-prize { font-size: 0.7rem; }
+    .ticket-actions { flex-direction: column; align-items: stretch; }
+    .btn { justify-content: center; }
+    .ticket-header h2 { font-size: 1.8rem; }
+  }
+
+  .btn.downloading { opacity: 0.6; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOADING (token validation) ===================== -->
+<div id="loadingSection">
+  <div class="loading-spinner"></div>
+  <p>Перевіряю запрошення...</p>
+</div>
+
+<!-- ===================== ERROR (invalid/used token) ===================== -->
+<div id="errorSection">
+  <h2>Посилання недійсне</h2>
+  <p id="errorMessage">Це запрошення вже використано або не існує. Якщо це помилка — напиши <a href="https://t.me/adhdvital" style="color: var(--copper);">@adhdvital</a></p>
+</div>
+
+<!-- ===================== FORM ===================== -->
+<div id="formSection" style="display:none;">
+  <div class="form-header">
+    <h1>Хочу в коммюніті</h1>
+    <p>Заповни форму → отримай тікет → я зв'яжусь протягом 5 робочих днів</p>
+  </div>
+
+  <div class="network-error" id="networkError">Не вдалося відправити, спробуй ще раз</div>
+
+  <form id="applyForm" novalidate>
+    <div class="form-group">
+      <label for="fieldName">Ім'я</label>
+      <input type="text" id="fieldName" placeholder="Що вказати на квитку в ком'юніті?" required minlength="2">
+      <div class="field-error">Мінімум 2 символи</div>
+    </div>
+
+    <div class="form-group">
+      <label for="fieldEmail">Email</label>
+      <input type="email" id="fieldEmail" placeholder="email@example.com" required>
+      <div class="field-error">Введи коректний email</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="fieldTelegram">Telegram</label>
+        <input type="text" id="fieldTelegram" placeholder="@username" required>
+        <div class="field-error">Обов'язкове поле</div>
+      </div>
+      <div class="form-group">
+        <label for="fieldInstagram">Instagram</label>
+        <input type="text" id="fieldInstagram" placeholder="@handle" required>
+        <div class="field-error">Обов'язкове поле</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="fieldLinkedin">LinkedIn</label>
+        <input type="text" id="fieldLinkedin" placeholder="linkedin.com/in/..." required>
+        <div class="field-error">Вкажи LinkedIn профіль</div>
+      </div>
+      <div class="form-group">
+        <label for="fieldTwitter">Twitter / X</label>
+        <input type="text" id="fieldTwitter" placeholder="@handle" required>
+        <div class="field-error">Обов'язкове поле</div>
+      </div>
+    </div>
+
+    <div class="form-divider"></div>
+
+    <div class="form-group">
+      <label for="fieldBuilding">Що ти будуєш / над чим працюєш?</label>
+      <textarea id="fieldBuilding" placeholder="Свій продукт, проєкт на роботі, сайд-хасл — 1-2 речення" required minlength="10" maxlength="500"></textarea>
+      <div class="field-error">Мінімум 10 символів</div>
+    </div>
+
+    <div class="form-group">
+      <label for="fieldContribution">Що готовий привнести в коммюніті?</label>
+      <textarea id="fieldContribution" placeholder="Досвід, час, ідеї — що хочеш дати?" required minlength="10" maxlength="500"></textarea>
+      <div class="field-error">Мінімум 10 символів</div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">
+      <span class="btn-text">Подати заявку</span>
+      <span class="spinner"></span>
+    </button>
+
+    <div class="form-footer">Дані використовуються тільки для розгляду заявки</div>
+  </form>
+</div>
+
+<!-- ===================== TICKET ===================== -->
+<div id="ticketSection">
+  <div class="ticket-header">
+    <h2>Тебе вибрано.</h2>
+    <p>Збережи або поділись — це твій шанс на вхід</p>
+  </div>
+
+  <div id="ticket-capture">
+    <div class="ticket-perspective">
+      <div class="ticket-wrapper" id="ticketWrapper">
+        <svg class="ticket-svg" id="ticketSvg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <filter id="shadow" x="-5%" y="-3%" width="110%" height="112%">
+              <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#2c2417" flood-opacity="0.1"/>
+            </filter>
+          </defs>
+        </svg>
+
+        <div class="ticket-content">
+          <div class="ticket-bar ticket-top-bar">
+            <span class="bar-line"></span>
+            <span>Admit One</span>
+            <span class="bar-line"></span>
+          </div>
+
+          <div class="ticket-side ticket-side-left">
+            <span class="side-num">No. <span id="sideNumLeft">0000</span></span>
+          </div>
+
+          <div class="ticket-side ticket-side-right">
+            <span>16.03.2026</span> &ensp; <span class="side-num">No. <span id="sideNumRight">0000</span></span>
+          </div>
+
+          <div class="ticket-center">
+            <div class="ticket-emblem">✦</div>
+            <div class="ticket-brand">Я клоданувся</div>
+            <div class="ticket-winner-name" id="winnerName"></div>
+            <div class="ticket-divider"></div>
+            <div class="ticket-prize">Шанс на пріоритетний вхід у коммюніті</div>
+          </div>
+
+          <div class="ticket-bar ticket-bottom-bar">
+            <span class="bar-line"></span>
+            <span>Admit One</span>
+            <span class="bar-line"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticket-actions">
+    <button class="btn btn-primary" id="downloadBtn" onclick="downloadPNG()">
+      <svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>
+      Завантажити PNG
+    </button>
+    <button class="btn" id="shareBtn" onclick="shareTicker()">
+      <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+      Поділитись
+    </button>
+  </div>
+
+  <div class="share-platforms">
+    <!-- X/Twitter -->
+    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    <!-- LinkedIn -->
+    <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+    <!-- Instagram -->
+    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+  </div>
+
+  <div class="share-tooltip" id="shareTooltip"></div>
+
+  <button class="copy-link-btn" id="copyLinkBtn" onclick="copyTicketLink()">Скопіювати посилання на тікет</button>
+</div>
+
+<script>
+// =============================================
+// Config
+// =============================================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQHsMWzCreQAMjHnDOM0CEptnuPAGKcIos-VG_InKlbZn6Fss-8KKDVVt5xPU6vno/exec';
+
+// Token from URL
+const urlParams = new URLSearchParams(window.location.search);
+const TOKEN = urlParams.get('token') || '';
+
+// =============================================
+// Token Validation on Page Load (client-side)
+// UUID v4 tokens = 128-bit entropy, URLs are unguessable
+// =============================================
+(function initPage() {
+  const loadingSection = document.getElementById('loadingSection');
+  const errorSection = document.getElementById('errorSection');
+  const formSection = document.getElementById('formSection');
+  const errorMessage = document.getElementById('errorMessage');
+
+  // Validate token format: must be a valid UUID v4
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  if (!TOKEN || !UUID_RE.test(TOKEN)) {
+    loadingSection.style.display = 'none';
+    errorSection.querySelector('h2').textContent = 'Потрібне запрошення';
+    errorMessage.innerHTML = 'Ця форма доступна тільки за персональним посиланням. Якщо ти маєш його — перевір URL.';
+    errorSection.classList.add('visible');
+    return;
+  }
+
+  // Token present and valid format — show form
+  loadingSection.style.display = 'none';
+  formSection.style.display = '';
+})();
+
+// =============================================
+// SVG Scalloped Ticket Path Generator
+// =============================================
+function generateScallopedTicket(w, h, margin, r, cornerR) {
+  const x1 = margin, y1 = margin;
+  const x2 = w - margin, y2 = h - margin;
+  const edgeW = x2 - x1;
+  const edgeH = y2 - y1;
+  const scallopDiameter = 2 * r;
+  const gap = r * 0.6;
+  const unit = scallopDiameter + gap;
+  const availH = edgeW - 2 * cornerR;
+  const availV = edgeH - 2 * cornerR;
+  const nH = Math.floor(availH / unit);
+  const nV = Math.floor(availV / unit);
+  const offsetH = (availH - nH * unit + gap) / 2;
+  const offsetV = (availV - nV * unit + gap) / 2;
+
+  let d = `M ${x1 + cornerR} ${y1}`;
+
+  const topStart = x1 + cornerR + offsetH;
+  for (let i = 0; i < nH; i++) {
+    const cx = topStart + i * unit;
+    d += ` L ${cx} ${y1} A ${r} ${r} 0 0 1 ${cx + scallopDiameter} ${y1}`;
+  }
+  d += ` L ${x2 - cornerR} ${y1} Q ${x2} ${y1} ${x2} ${y1 + cornerR}`;
+
+  const rightStart = y1 + cornerR + offsetV;
+  for (let i = 0; i < nV; i++) {
+    const cy = rightStart + i * unit;
+    d += ` L ${x2} ${cy} A ${r} ${r} 0 0 1 ${x2} ${cy + scallopDiameter}`;
+  }
+  d += ` L ${x2} ${y2 - cornerR} Q ${x2} ${y2} ${x2 - cornerR} ${y2}`;
+
+  const bottomStart = x2 - cornerR - offsetH;
+  for (let i = 0; i < nH; i++) {
+    const cx = bottomStart - i * unit;
+    d += ` L ${cx} ${y2} A ${r} ${r} 0 0 1 ${cx - scallopDiameter} ${y2}`;
+  }
+  d += ` L ${x1 + cornerR} ${y2} Q ${x1} ${y2} ${x1} ${y2 - cornerR}`;
+
+  const leftStart = y2 - cornerR - offsetV;
+  for (let i = 0; i < nV; i++) {
+    const cy = leftStart - i * unit;
+    d += ` L ${x1} ${cy} A ${r} ${r} 0 0 1 ${x1} ${cy - scallopDiameter}`;
+  }
+  d += ` L ${x1} ${y1 + cornerR} Q ${x1} ${y1} ${x1 + cornerR} ${y1} Z`;
+
+  return d;
+}
+
+function buildTicketSVG() {
+  const svg = document.getElementById('ticketSvg');
+  const ticketPath = generateScallopedTicket(800, 500, 12, 5, 20);
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', ticketPath);
+  path.setAttribute('fill', '#faf7f0');
+  path.setAttribute('stroke', '#d4c9b8');
+  path.setAttribute('stroke-width', '1.2');
+  path.setAttribute('filter', 'url(#shadow)');
+  svg.appendChild(path);
+
+  const inner = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  inner.setAttribute('x', '38'); inner.setAttribute('y', '38');
+  inner.setAttribute('width', '724'); inner.setAttribute('height', '424');
+  inner.setAttribute('rx', '10'); inner.setAttribute('fill', 'none');
+  inner.setAttribute('stroke', '#e8dfd2');
+  inner.setAttribute('stroke-width', '0.8');
+  inner.setAttribute('stroke-dasharray', '6 4');
+  svg.appendChild(inner);
+
+  [[32, 32], [768, 32], [32, 468], [768, 468]].forEach(([cx, cy]) => {
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', cx); c.setAttribute('cy', cy);
+    c.setAttribute('r', '3'); c.setAttribute('fill', '#f5f0e8');
+    c.setAttribute('stroke', '#d4c9b8'); c.setAttribute('stroke-width', '0.8');
+    svg.appendChild(c);
+  });
+}
+
+// =============================================
+// 3D Tilt
+// =============================================
+function initTilt() {
+  const wrapper = document.getElementById('ticketWrapper');
+  const perspective = wrapper.parentElement;
+  if ('ontouchstart' in window) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  perspective.addEventListener('mousemove', (e) => {
+    const rect = perspective.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    wrapper.classList.remove('resetting');
+    wrapper.style.setProperty('--x-rotation', `${(0.5 - y) * 15}deg`);
+    wrapper.style.setProperty('--y-rotation', `${(x - 0.5) * 15}deg`);
+    wrapper.style.setProperty('--mouse-x', `${x * 100}%`);
+    wrapper.style.setProperty('--mouse-y', `${y * 100}%`);
+  });
+
+  perspective.addEventListener('mouseleave', () => {
+    wrapper.classList.add('resetting');
+    wrapper.style.setProperty('--x-rotation', '0deg');
+    wrapper.style.setProperty('--y-rotation', '0deg');
+  });
+}
+
+// =============================================
+// Form Validation & Submission
+// =============================================
+const fields = {
+  name: { el: () => document.getElementById('fieldName'), validate: v => v.length >= 2 },
+  email: { el: () => document.getElementById('fieldEmail'), validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+  telegram: { el: () => document.getElementById('fieldTelegram'), validate: v => v.length >= 2 },
+  linkedin: { el: () => document.getElementById('fieldLinkedin'), validate: v => v.toLowerCase().includes('linkedin.com') || v.length >= 3 },
+  twitter: { el: () => document.getElementById('fieldTwitter'), validate: v => v.length >= 2 },
+  instagram: { el: () => document.getElementById('fieldInstagram'), validate: v => v.length >= 2 },
+  building: { el: () => document.getElementById('fieldBuilding'), validate: v => v.length >= 10 },
+  contribution: { el: () => document.getElementById('fieldContribution'), validate: v => v.length >= 10 },
+};
+
+function normalize(field, value) {
+  value = value.trim();
+  if (field === 'telegram') return value.replace(/^https?:\/\/t\.me\//, '').replace(/^@/, '');
+  if (field === 'twitter') return value.replace(/^https?:\/\/(x\.com|twitter\.com)\//, '').replace(/^@/, '');
+  if (field === 'instagram') return value.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/^@/, '');
+  return value;
+}
+
+function validateAll() {
+  let valid = true;
+  for (const [key, field] of Object.entries(fields)) {
+    const el = field.el();
+    const value = normalize(key, el.value);
+    const group = el.closest('.form-group');
+    if (!field.validate(value)) {
+      group.classList.add('has-error');
+      valid = false;
+    } else {
+      group.classList.remove('has-error');
+    }
+  }
+  return valid;
+}
+
+function getFormData() {
+  return {
+    name: fields.name.el().value.trim(),
+    email: normalize('email', fields.email.el().value),
+    telegram: normalize('telegram', fields.telegram.el().value),
+    linkedin: fields.linkedin.el().value.trim(),
+    twitter: normalize('twitter', fields.twitter.el().value),
+    instagram: normalize('instagram', fields.instagram.el().value),
+    building: fields.building.el().value.trim(),
+    contribution: fields.contribution.el().value.trim(),
+  };
+}
+
+// Store for ticket data after submit
+let ticketName = '';
+let ticketNum = '0000';
+
+document.getElementById('applyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!validateAll()) return;
+
+  const btn = document.getElementById('submitBtn');
+  const errorBanner = document.getElementById('networkError');
+  errorBanner.classList.remove('visible');
+  btn.disabled = true;
+  btn.classList.add('loading');
+
+  const data = getFormData();
+
+  try {
+    let num;
+
+    if (SCRIPT_URL) {
+      const params = new URLSearchParams({
+        action: 'submit',
+        token: TOKEN,
+        name: data.name,
+        email: data.email,
+        telegram: data.telegram,
+        linkedin: data.linkedin,
+        twitter: data.twitter,
+        instagram: data.instagram,
+        building: data.building,
+        contribution: data.contribution,
+      });
+      const res = await fetch(`${SCRIPT_URL}?${params}`, { redirect: 'follow' });
+      const result = await res.json();
+      if (result.error) {
+        if (result.error === 'token_already_used' || result.error === 'invalid_token') {
+          errorBanner.textContent = 'Це запрошення вже використане';
+        } else {
+          errorBanner.textContent = result.error;
+        }
+        errorBanner.classList.add('visible');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        return;
+      }
+      num = result.num;
+    } else {
+      // Mock mode: random ticket number
+      num = Math.floor(Math.random() * 500) + 1;
+      await new Promise(r => setTimeout(r, 800));
+    }
+
+    ticketName = data.name;
+    ticketNum = String(num).padStart(4, '0');
+    showTicket();
+  } catch (err) {
+    console.error('Submit error:', err);
+    errorBanner.classList.add('visible');
+    btn.disabled = false;
+    btn.classList.remove('loading');
+  }
+});
+
+// =============================================
+// Show Ticket
+// =============================================
+function showTicket() {
+  const formSection = document.getElementById('formSection');
+  const ticketSection = document.getElementById('ticketSection');
+
+  // Build SVG
+  buildTicketSVG();
+
+  // Populate
+  document.getElementById('winnerName').textContent = ticketName;
+  document.getElementById('sideNumLeft').textContent = ticketNum;
+  document.getElementById('sideNumRight').textContent = ticketNum;
+
+  // Transition
+  formSection.classList.add('hiding');
+  setTimeout(() => {
+    formSection.classList.add('hidden');
+    ticketSection.classList.add('visible');
+    initTilt();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 400);
+}
+
+// =============================================
+// Download PNG
+// =============================================
+async function generateTicketBlob() {
+  await document.fonts.ready;
+  const el = document.getElementById('ticket-capture');
+  const canvas = await html2canvas(el, {
+    scale: 2,
+    backgroundColor: '#f5f0e8',
+    useCORS: true,
+    logging: false,
+  });
+
+  const outW = 1080, outH = 675;
+  const sq = document.createElement('canvas');
+  sq.width = outW; sq.height = outH;
+  const ctx = sq.getContext('2d');
+  ctx.fillStyle = '#f5f0e8';
+  ctx.fillRect(0, 0, outW, outH);
+  const scale = Math.min(outW / canvas.width, outH / canvas.height) * 0.9;
+  const w = canvas.width * scale;
+  const h = canvas.height * scale;
+  ctx.drawImage(canvas, (outW - w) / 2, (outH - h) / 2, w, h);
+
+  return new Promise(resolve => sq.toBlob(resolve, 'image/png'));
+}
+
+async function downloadPNG() {
+  const btn = document.getElementById('downloadBtn');
+  btn.classList.add('downloading');
+  btn.textContent = 'Генерую...';
+
+  try {
+    const blob = await generateTicketBlob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `ticket-${ticketName.replace(/\s+/g, '-').toLowerCase() || ticketNum}.png`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Download error:', err);
+  }
+
+  btn.classList.remove('downloading');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg> Завантажити PNG';
+}
+
+// =============================================
+// Share
+// =============================================
+async function shareTicker() {
+  const shareText = 'Я клоданувся!';
+
+  // Mobile: Web Share API with file
+  if (navigator.share && navigator.canShare) {
+    try {
+      const blob = await generateTicketBlob();
+      const file = new File([blob], 'ticket.png', { type: 'image/png' });
+
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          text: shareText,
+          files: [file],
+        });
+        return;
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.error('Share error:', err);
+    }
+  }
+
+  // Desktop fallback: download + copy text
+  await downloadPNG();
+  try {
+    await navigator.clipboard.writeText(shareText);
+    showShareTooltip('Картинку завантажено, текст скопійовано — вставляй');
+  } catch {
+    showShareTooltip('Картинку завантажено');
+  }
+}
+
+function showShareTooltip(text) {
+  const tip = document.getElementById('shareTooltip');
+  tip.textContent = text;
+  tip.classList.add('visible');
+  setTimeout(() => tip.classList.remove('visible'), 3000);
+}
+
+function copyTicketLink() {
+  const base = window.location.href.replace(/community-apply\.html.*/, 'raffle-ticket.html');
+  const url = `${base}?name=${encodeURIComponent(ticketName)}&num=${ticketNum}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copyLinkBtn');
+    btn.textContent = 'Скопійовано!';
+    setTimeout(() => { btn.textContent = 'Скопіювати посилання на тікет'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

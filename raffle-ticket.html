@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Я клоданувся — Raffle Ticket</title>
+<meta property="og:title" content="Я клоданувся! 🇺🇦">
+<meta property="og:description" content="Шанс на пріоритетний вхід у коммюніті">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --ticket-bg: #faf7f0;
+    --text-dark: #2c2417;
+    --text-light: #a89880;
+    --copper: #b87333;
+    --border: #d4c9b8;
+    --inner-border: #e8dfd2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  body.stream-mode {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: var(--text-dark);
+    letter-spacing: -0.02em;
+  }
+
+  #ticket-capture {
+    position: relative;
+    width: 700px;
+    max-width: 100%;
+  }
+
+  .ticket-perspective {
+    perspective: 1000px;
+  }
+
+  .ticket-wrapper {
+    position: relative;
+    width: 700px;
+    max-width: 100%;
+    aspect-ratio: 8 / 5;
+    transform: rotateX(var(--x-rotation, 0deg)) rotateY(var(--y-rotation, 0deg));
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transition: transform 0.1s ease-out;
+  }
+
+  .ticket-wrapper.resetting {
+    transition: transform 0.5s ease-out;
+  }
+
+  .ticket-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.1) 30%,
+      transparent 70%
+    );
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+  }
+
+  .ticket-wrapper:hover::after { opacity: 1; }
+
+  .ticket-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  .ticket-content {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top & bottom bars with decorative lines */
+  .ticket-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 80px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    opacity: 0.7;
+  }
+
+  .ticket-top-bar {
+    padding-top: 20px;
+  }
+
+  .ticket-bottom-bar {
+    padding-bottom: 20px;
+  }
+
+  .ticket-bar .bar-line {
+    flex: 1;
+    height: 1px;
+    background: var(--inner-border);
+  }
+
+  .ticket-bar span:not(.bar-line) {
+    flex-shrink: 0;
+  }
+
+  /* Side labels */
+  .ticket-side {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    white-space: nowrap;
+  }
+
+  .ticket-side-left {
+    left: 28px;
+    top: 50%;
+    transform: rotate(-90deg) translateX(-50%);
+    transform-origin: 0 0;
+  }
+
+  .ticket-side-right {
+    right: 28px;
+    top: 50%;
+    transform: rotate(90deg) translateX(50%);
+    transform-origin: 100% 0;
+  }
+
+  .ticket-side .side-num {
+    color: var(--copper);
+    font-weight: 700;
+  }
+
+  /* Center */
+  .ticket-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 70px;
+    text-align: center;
+  }
+
+  .ticket-emblem {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: var(--copper);
+    opacity: 0.6;
+  }
+
+  .ticket-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.8rem;
+    font-weight: 900;
+    color: var(--text-dark);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .ticket-winner-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--copper);
+    margin-bottom: 14px;
+    min-height: 0;
+  }
+
+  .ticket-winner-name:empty {
+    display: none;
+  }
+
+  .ticket-divider {
+    width: 60px;
+    height: 1px;
+    background: var(--border);
+    margin: 0 auto 14px;
+  }
+
+  .ticket-prize {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--copper);
+    letter-spacing: 0.02em;
+    max-width: 340px;
+    line-height: 1.5;
+  }
+
+  /* (bottom bar styles merged into .ticket-bar above) */
+
+  /* Actions */
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--ticket-bg);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn:hover {
+    border-color: var(--copper);
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+
+  .btn-primary {
+    background: var(--text-dark);
+    color: var(--ticket-bg);
+    border-color: var(--text-dark);
+  }
+
+  .btn-primary:hover {
+    background: #3d3225;
+    border-color: #3d3225;
+    color: #fff;
+  }
+
+  .btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* Stream mode */
+  body.stream-mode .page-header,
+  body.stream-mode .actions { display: none; }
+
+  body.stream-mode #ticket-capture { transform: scale(1.15); }
+
+  body.stream-mode .ticket-wrapper {
+    animation: ticketFadeIn 1.2s ease-out;
+  }
+
+  @keyframes ticketFadeIn {
+    0% { opacity: 0; transform: scale(0.92) translateY(30px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .ticket-wrapper {
+      transition: none !important;
+      transform: none !important;
+    }
+    .ticket-wrapper::after {
+      display: none;
+    }
+    .ticket-wrapper.resetting {
+      transition: none !important;
+    }
+    body.stream-mode .ticket-wrapper {
+      animation: none;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 740px) {
+    body { padding: 24px 12px; }
+    .page-header h1 { font-size: 2rem; }
+    #ticket-capture, .ticket-wrapper { width: 100%; }
+    .ticket-brand { font-size: 2.6rem; }
+    .ticket-winner-name { font-size: 1.1rem; }
+    .ticket-bar { font-size: 0.5rem; padding-left: 50px; padding-right: 50px; }
+    .ticket-side { font-size: 0.45rem; }
+    .ticket-side-left { left: 16px; }
+    .ticket-side-right { right: 16px; }
+    .ticket-center { padding: 10px 44px; }
+    .ticket-prize { font-size: 0.7rem; }
+    .actions { flex-direction: column; align-items: stretch; }
+    .btn { justify-content: center; }
+  }
+
+  @media (min-width: 1920px) {
+    body.stream-mode { min-height: 1080px; }
+    body.stream-mode #ticket-capture { transform: scale(1.5); }
+  }
+
+  .btn.downloading { opacity: 0.6; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Тебе вибрано.</h1>
+</div>
+
+<div id="ticket-capture">
+  <div class="ticket-perspective">
+    <div class="ticket-wrapper" id="ticketWrapper">
+      <svg class="ticket-svg" id="ticketSvg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="shadow" x="-5%" y="-3%" width="110%" height="112%">
+            <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#2c2417" flood-opacity="0.1"/>
+          </filter>
+        </defs>
+        <!-- Generated by JS -->
+      </svg>
+
+      <div class="ticket-content">
+        <div class="ticket-bar ticket-top-bar">
+          <span class="bar-line"></span>
+          <span>Admit One</span>
+          <span class="bar-line"></span>
+        </div>
+
+        <div class="ticket-side ticket-side-left">
+          <span class="side-num">No. <span id="sideNumLeft">0000</span></span>
+        </div>
+
+        <div class="ticket-side ticket-side-right">
+          <span>16.03.2026</span> &ensp; <span class="side-num">No. <span id="sideNumRight">0000</span></span>
+        </div>
+
+        <div class="ticket-center">
+          <div class="ticket-emblem">✦</div>
+          <div class="ticket-brand">Проходка</div>
+          <div class="ticket-winner-name" id="winnerName"></div>
+          <div class="ticket-divider" id="divider"></div>
+          <div class="ticket-prize" id="ticketPrize">Пріоритетна проходка в ком'юніті від Yeti Founder 420</div>
+        </div>
+
+        <div class="ticket-bar ticket-bottom-bar">
+          <span class="bar-line"></span>
+          <span>Admit One</span>
+          <span class="bar-line"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="actions" id="actions">
+  <button class="btn btn-primary" id="downloadBtn" onclick="downloadPNG()">
+    <svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>
+    Завантажити PNG
+  </button>
+  <a class="btn" id="twitterBtn" href="#" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    X / Twitter
+  </a>
+  <a class="btn" id="linkedinBtn" href="#" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+    LinkedIn
+  </a>
+</div>
+
+<script>
+// =============================================
+// SVG Scalloped Ticket Path Generator
+// =============================================
+function generateScallopedTicket(w, h, margin, r, cornerR) {
+  const x1 = margin, y1 = margin;
+  const x2 = w - margin, y2 = h - margin;
+  const edgeW = x2 - x1;
+  const edgeH = y2 - y1;
+
+  const scallopDiameter = 2 * r;
+  const gap = r * 0.6;
+  const unit = scallopDiameter + gap;
+
+  const availH = edgeW - 2 * cornerR;
+  const availV = edgeH - 2 * cornerR;
+  const nH = Math.floor(availH / unit);
+  const nV = Math.floor(availV / unit);
+
+  const offsetH = (availH - nH * unit + gap) / 2;
+  const offsetV = (availV - nV * unit + gap) / 2;
+
+  let d = '';
+
+  d += `M ${x1 + cornerR} ${y1}`;
+
+  // TOP EDGE
+  const topStart = x1 + cornerR + offsetH;
+  for (let i = 0; i < nH; i++) {
+    const cx = topStart + i * unit;
+    d += ` L ${cx} ${y1}`;
+    d += ` A ${r} ${r} 0 0 1 ${cx + scallopDiameter} ${y1}`;
+  }
+  d += ` L ${x2 - cornerR} ${y1}`;
+
+  // TOP-RIGHT CORNER
+  d += ` Q ${x2} ${y1} ${x2} ${y1 + cornerR}`;
+
+  // RIGHT EDGE
+  const rightStart = y1 + cornerR + offsetV;
+  for (let i = 0; i < nV; i++) {
+    const cy = rightStart + i * unit;
+    d += ` L ${x2} ${cy}`;
+    d += ` A ${r} ${r} 0 0 1 ${x2} ${cy + scallopDiameter}`;
+  }
+  d += ` L ${x2} ${y2 - cornerR}`;
+
+  // BOTTOM-RIGHT CORNER
+  d += ` Q ${x2} ${y2} ${x2 - cornerR} ${y2}`;
+
+  // BOTTOM EDGE
+  const bottomStart = x2 - cornerR - offsetH;
+  for (let i = 0; i < nH; i++) {
+    const cx = bottomStart - i * unit;
+    d += ` L ${cx} ${y2}`;
+    d += ` A ${r} ${r} 0 0 1 ${cx - scallopDiameter} ${y2}`;
+  }
+  d += ` L ${x1 + cornerR} ${y2}`;
+
+  // BOTTOM-LEFT CORNER
+  d += ` Q ${x1} ${y2} ${x1} ${y2 - cornerR}`;
+
+  // LEFT EDGE
+  const leftStart = y2 - cornerR - offsetV;
+  for (let i = 0; i < nV; i++) {
+    const cy = leftStart - i * unit;
+    d += ` L ${x1} ${cy}`;
+    d += ` A ${r} ${r} 0 0 1 ${x1} ${cy - scallopDiameter}`;
+  }
+  d += ` L ${x1} ${y1 + cornerR}`;
+
+  // TOP-LEFT CORNER
+  d += ` Q ${x1} ${y1} ${x1 + cornerR} ${y1}`;
+
+  d += ' Z';
+  return d;
+}
+
+function buildTicketSVG() {
+  const svg = document.getElementById('ticketSvg');
+  const ticketPath = generateScallopedTicket(800, 500, 12, 5, 20);
+
+  // Ticket shape
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', ticketPath);
+  path.setAttribute('fill', '#faf7f0');
+  path.setAttribute('stroke', '#d4c9b8');
+  path.setAttribute('stroke-width', '1.2');
+  path.setAttribute('filter', 'url(#shadow)');
+  svg.appendChild(path);
+
+  // Inner decorative border (dashed)
+  const inner = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  inner.setAttribute('x', '38');
+  inner.setAttribute('y', '38');
+  inner.setAttribute('width', '724');
+  inner.setAttribute('height', '424');
+  inner.setAttribute('rx', '10');
+  inner.setAttribute('fill', 'none');
+  inner.setAttribute('stroke', '#e8dfd2');
+  inner.setAttribute('stroke-width', '0.8');
+  inner.setAttribute('stroke-dasharray', '6 4');
+  svg.appendChild(inner);
+
+  // Corner dots
+  [[32, 32], [768, 32], [32, 468], [768, 468]].forEach(([cx, cy]) => {
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', cx);
+    c.setAttribute('cy', cy);
+    c.setAttribute('r', '3');
+    c.setAttribute('fill', '#f5f0e8');
+    c.setAttribute('stroke', '#d4c9b8');
+    c.setAttribute('stroke-width', '0.8');
+    svg.appendChild(c);
+  });
+}
+
+// =============================================
+// 3D Tilt + Shimmer
+// =============================================
+function initTilt() {
+  const wrapper = document.getElementById('ticketWrapper');
+  const perspective = wrapper.parentElement;
+
+  // Only on desktop (no touch)
+  if ('ontouchstart' in window) return;
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
+  perspective.addEventListener('mousemove', (e) => {
+    const rect = perspective.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    const rotateX = (0.5 - y) * 15;
+    const rotateY = (x - 0.5) * 15;
+
+    wrapper.classList.remove('resetting');
+    wrapper.style.setProperty('--x-rotation', `${rotateX}deg`);
+    wrapper.style.setProperty('--y-rotation', `${rotateY}deg`);
+    wrapper.style.setProperty('--mouse-x', `${x * 100}%`);
+    wrapper.style.setProperty('--mouse-y', `${y * 100}%`);
+  });
+
+  perspective.addEventListener('mouseleave', () => {
+    wrapper.classList.add('resetting');
+    wrapper.style.setProperty('--x-rotation', '0deg');
+    wrapper.style.setProperty('--y-rotation', '0deg');
+  });
+}
+
+// =============================================
+// URL Params & Init
+// =============================================
+const params = new URLSearchParams(window.location.search);
+const name = params.get('name') || '';
+const num = params.get('num') || '0000';
+const streamMode = params.get('stream') === '1';
+
+function init() {
+  buildTicketSVG();
+
+  // Name
+  if (name) {
+    document.getElementById('winnerName').textContent = name;
+  }
+
+  // Ticket number
+  const paddedNum = num.padStart(4, '0');
+  document.getElementById('sideNumLeft').textContent = paddedNum;
+  document.getElementById('sideNumRight').textContent = paddedNum;
+
+  // Stream mode
+  if (streamMode) {
+    document.body.classList.add('stream-mode');
+  }
+
+  // Share URLs
+  const shareText = encodeURIComponent('Я клоданувся!');
+  const shareUrl = encodeURIComponent(window.location.href);
+  document.getElementById('twitterBtn').href = `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`;
+  document.getElementById('linkedinBtn').href = `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`;
+
+  // 3D tilt
+  initTilt();
+}
+
+// =============================================
+// Download PNG
+// =============================================
+async function downloadPNG() {
+  const btn = document.getElementById('downloadBtn');
+  btn.classList.add('downloading');
+  btn.textContent = 'Генерую...';
+
+  await document.fonts.ready;
+
+  try {
+    const el = document.getElementById('ticket-capture');
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      backgroundColor: '#f5f0e8',
+      useCORS: true,
+      logging: false,
+    });
+
+    // 1080x675 (8:5)
+    const outW = 1080;
+    const outH = 675;
+    const sq = document.createElement('canvas');
+    sq.width = outW;
+    sq.height = outH;
+    const ctx = sq.getContext('2d');
+    ctx.fillStyle = '#f5f0e8';
+    ctx.fillRect(0, 0, outW, outH);
+
+    const scale = Math.min(outW / canvas.width, outH / canvas.height) * 0.9;
+    const w = canvas.width * scale;
+    const h = canvas.height * scale;
+    ctx.drawImage(canvas, (outW - w) / 2, (outH - h) / 2, w, h);
+
+    const link = document.createElement('a');
+    link.download = name
+      ? `ticket-${name.replace(/\s+/g, '-').toLowerCase()}.png`
+      : `ticket-${num}.png`;
+    link.href = sq.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    console.error('Download error:', err);
+    alert('Помилка генерації PNG');
+  }
+
+  btn.classList.remove('downloading');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg> Завантажити PNG';
+}
+
+init();
+</script>
+</body>
+</html>
